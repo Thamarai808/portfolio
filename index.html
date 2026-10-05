@@ -208,18 +208,128 @@ body.light-theme header.scrolled {
   animation: fadeUp .9s .3s forwards;
 }
 
-/* Grid pattern backdrop sitting behind / around the photo */
-.hero-frame-grid {
-  position: absolute;
-  inset: -36px;
+/* ───── ADVANCED GRID SYSTEM ───── */
+.hero-frame { perspective: 1100px; }
+
+/* base grid: major (rust) + minor lines, slowly drifting */
+.hf-grid {
+  position: absolute; inset: -64px; z-index: 0; pointer-events: none;
   background-image:
+    linear-gradient(rgba(192,67,42,.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(192,67,42,.22) 1px, transparent 1px),
     linear-gradient(var(--grid-line) 1px, transparent 1px),
     linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
-  background-size: 28px 28px;
-  -webkit-mask-image: radial-gradient(ellipse at center, #000 45%, transparent 78%);
-          mask-image: radial-gradient(ellipse at center, #000 45%, transparent 78%);
-  z-index: 0;
+  background-size: 112px 112px, 112px 112px, 28px 28px, 28px 28px;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 40%, transparent 76%);
+          mask-image: radial-gradient(ellipse at center, #000 40%, transparent 76%);
+  animation: hfDrift 24s linear infinite;
 }
+@keyframes hfDrift {
+  from { background-position: 0 0, 0 0, 0 0, 0 0; }
+  to   { background-position: 112px 112px, 112px 112px, 112px 112px, 112px 112px; }
+}
+
+/* spotlight grid: lights up under the cursor */
+.hf-grid--glow {
+  background-image:
+    linear-gradient(rgba(212,80,53,.85) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(212,80,53,.85) 1px, transparent 1px);
+  background-size: 28px 28px, 28px 28px;
+  -webkit-mask-image: radial-gradient(circle 150px at var(--mx, 50%) var(--my, 50%), #000 0%, transparent 100%);
+          mask-image: radial-gradient(circle 150px at var(--mx, 50%) var(--my, 50%), #000 0%, transparent 100%);
+  opacity: 0; transition: opacity .4s var(--ease);
+  animation: hfDriftGlow 24s linear infinite;
+}
+@keyframes hfDriftGlow {
+  from { background-position: 0 0, 0 0; }
+  to   { background-position: 112px 112px, 112px 112px; }
+}
+.hero-frame:hover .hf-grid--glow { opacity: 1; }
+
+/* measuring rulers */
+.hf-ruler { position: absolute; z-index: 1; pointer-events: none; opacity: .8; }
+.hf-ruler-x {
+  top: -46px; left: 0; right: 0; height: 10px;
+  background:
+    repeating-linear-gradient(90deg, var(--rust) 0 1px, transparent 1px 88px) left bottom / 100% 10px no-repeat,
+    repeating-linear-gradient(90deg, var(--muted-light) 0 1px, transparent 1px 22px) left bottom / 100% 5px no-repeat;
+}
+.hf-ruler-y {
+  left: -46px; top: 0; bottom: 0; width: 10px;
+  background:
+    repeating-linear-gradient(180deg, var(--rust) 0 1px, transparent 1px 88px) right top / 10px 100% no-repeat,
+    repeating-linear-gradient(180deg, var(--muted-light) 0 1px, transparent 1px 22px) right top / 5px 100% no-repeat;
+}
+
+/* orbit rings */
+.hf-ring { position: absolute; border-radius: 50%; z-index: 1; pointer-events: none; }
+.hf-ring--a {
+  width: 170px; height: 170px; top: -74px; right: -68px;
+  border: 1px dashed rgba(192,67,42,.45);
+  animation: hfSpin 40s linear infinite;
+}
+.hf-ring--a::after {
+  content: ''; position: absolute; top: 50%; left: -4px;
+  width: 8px; height: 8px; border-radius: 50%; background: var(--rust);
+  box-shadow: 0 0 14px var(--rust-glow);
+}
+.hf-ring--b {
+  width: 92px; height: 92px; bottom: -44px; left: -40px;
+  border: 1px solid var(--border);
+  border-top-color: var(--rust);
+  animation: hfSpin 9s linear infinite reverse;
+}
+@keyframes hfSpin { to { transform: rotate(360deg); } }
+
+/* plus markers */
+.hf-plus { position: absolute; width: 14px; height: 14px; z-index: 1; pointer-events: none; animation: hfPulse 3.2s ease-in-out infinite; }
+.hf-plus::before, .hf-plus::after { content: ''; position: absolute; background: var(--rust); }
+.hf-plus::before { left: 6px; top: 0; width: 1px; height: 14px; }
+.hf-plus::after  { top: 6px; left: 0; height: 1px; width: 14px; }
+.hf-plus.hp1 { top: -30px; left: 88px; }
+.hf-plus.hp2 { top: 40%; right: -54px; animation-delay: .8s; }
+.hf-plus.hp3 { bottom: -32px; right: 120px; animation-delay: 1.6s; }
+.hf-plus.hp4 { top: 62%; left: -44px; animation-delay: 2.2s; }
+@keyframes hfPulse { 0%,100% { opacity: .35; transform: scale(.85); } 50% { opacity: 1; transform: scale(1.15); } }
+
+/* 3D tilt layer (photo + outline + brackets) */
+.hf-tilt {
+  position: absolute; inset: 0; z-index: 2;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+/* scan line sweeping across the photo */
+.hf-scanline {
+  position: absolute; left: 0; right: 0; top: 0; height: 2px; z-index: 3;
+  background: linear-gradient(90deg, transparent, var(--rust-light), transparent);
+  box-shadow: 0 0 18px 4px var(--rust-glow);
+  animation: hfScan 5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes hfScan {
+  0%   { top: -4%; opacity: 0; }
+  12%  { opacity: 1; }
+  88%  { opacity: 1; }
+  100% { top: 104%; opacity: 0; }
+}
+
+/* live coordinate readout */
+.hf-readout {
+  position: absolute; left: 0; bottom: -46px; z-index: 5;
+  display: flex; align-items: center; gap: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 11px; letter-spacing: 2.5px;
+  color: var(--muted-light); font-variant-numeric: tabular-nums;
+}
+.hf-readout i {
+  display: block; width: 8px; height: 8px; background: var(--rust);
+  animation: statusBlink 2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hf-grid, .hf-grid--glow, .hf-ring, .hf-plus, .hf-scanline { animation: none; }
+}
+
 
 /* Offset outline frame (peeks out behind the photo) */
 .hero-frame-outline {
@@ -271,15 +381,6 @@ body.light-theme header.scrolled {
 .frame-corner.bl { bottom: -10px; left: -10px; border-bottom-width: 2px; border-left-width: 2px; }
 .frame-corner.br { bottom: -10px; right: -10px; border-bottom-width: 2px; border-right-width: 2px; }
 
-/* Label chip (top-right of the frame) */
-.frame-tag {
-  position: absolute; top: 18px; left: -14px;
-  z-index: 5;
-  padding: 7px 16px;
-  background: var(--rust); color: #fff;
-  font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
-  font-weight: 500;
-}
 
 /* Floating badges */
 .frame-badge {
@@ -303,7 +404,6 @@ body.light-theme .frame-badge { background: rgba(255,255,255,.92); color: #111; 
   text-transform: uppercase; color: var(--muted-light);
 }
 .frame-badge.b1 { bottom: 34px; right: -30px; animation: floatBadge 5s ease-in-out infinite; }
-.frame-badge.b2 { top: 70px; right: -34px; animation: floatBadge 5s 1.2s ease-in-out infinite; }
 .frame-badge .live-dot {
   width: 8px; height: 8px; border-radius: 50%; background: #4caf81;
   animation: statusBlink 2s ease-in-out infinite;
@@ -954,8 +1054,10 @@ footer {
   .hero-img-wrap { padding: 110px 44px 30px 32px; }
   .hero-frame-outline { transform: translate(12px, 12px); }
   .frame-badge.b1 { right: -22px; bottom: 20px; padding: 9px 12px; }
-  .frame-badge.b2 { right: -22px; top: 56px; padding: 9px 12px; }
-  .frame-badge strong { font-size: 18px; }
+    .frame-badge strong { font-size: 18px; }
+  .hf-ruler-y, .hf-plus.hp2, .hf-plus.hp4 { display: none; }
+  .hf-ring--a { width: 120px; height: 120px; top: -50px; right: -40px; }
+  .hf-readout { bottom: -40px; }
 }
 </style>
 </head>
@@ -1017,35 +1119,40 @@ footer {
 
 <section id="home" class="hero">
 
-  <!-- ═════ HERO IMAGE WITH GRID / FRAME ═════ -->
+  <!-- ═════ HERO IMAGE WITH ADVANCED GRID / FRAME ═════ -->
   <div class="hero-img-wrap">
-    <div class="hero-frame">
-      <!-- grid pattern behind -->
-      <div class="hero-frame-grid"></div>
-      <!-- offset outline -->
-      <div class="hero-frame-outline"></div>
+    <div class="hero-frame" id="heroFrame">
 
-      <!-- photo -->
-      <div class="hero-frame-photo">
-        <img src="profile(01).jpg" alt="Thamaraiselvan Baskaran">
-      </div>
+      <!-- grid layers -->
+      <div class="hf-grid"></div>
+      <div class="hf-grid hf-grid--glow" id="hfGlow"></div>
 
-      <!-- corner brackets -->
-      <span class="frame-corner tl"></span>
-      <span class="frame-corner bl"></span>
-      <span class="frame-corner br"></span>
+      <!-- rulers, rings, markers -->
+      <div class="hf-ruler hf-ruler-x"></div>
+      <div class="hf-ruler hf-ruler-y"></div>
+      <div class="hf-ring hf-ring--a"></div>
+      <div class="hf-ring hf-ring--b"></div>
+      <span class="hf-plus hp1"></span>
+      <span class="hf-plus hp2"></span>
+      <span class="hf-plus hp3"></span>
+      <span class="hf-plus hp4"></span>
 
-      <!-- label + floating badges -->
-      <div class="frame-tag">Portfolio 2026</div>
-
-      <div class="frame-badge b2">
-        <i class="fas fa-code"></i>
-        <div>
-          <strong>Full Stack</strong>
-          <span>Developer</span>
+      <!-- tilting photo layer -->
+      <div class="hf-tilt" id="hfTilt">
+        <div class="hero-frame-outline"></div>
+        <div class="hero-frame-photo">
+          <img src="profile(01).jpg" alt="Thamaraiselvan Baskaran">
+          <span class="hf-scanline"></span>
         </div>
+        <span class="frame-corner tl"></span>
+        <span class="frame-corner bl"></span>
+        <span class="frame-corner br"></span>
       </div>
 
+      <!-- live coordinates -->
+      <div class="hf-readout"><i></i><span id="hfReadout">X 000 · Y 000</span></div>
+
+      <!-- availability badge -->
       <div class="frame-badge b1">
         <span class="live-dot"></span>
         <div>
@@ -1612,6 +1719,34 @@ document.getElementById('contactForm').addEventListener('submit', e => {
       status.className = 'form-status error';
     });
 });
+
+/* HERO FRAME: 3D tilt + grid spotlight + coordinate readout */
+(function(){
+  const frame = document.getElementById('heroFrame');
+  if(!frame) return;
+  if(!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
+  const tilt = document.getElementById('hfTilt');
+  const glow = document.getElementById('hfGlow');
+  const readout = document.getElementById('hfReadout');
+  const pad = n => String(Math.max(0, Math.min(999, Math.round(n)))).padStart(3, '0');
+
+  frame.addEventListener('mousemove', e => {
+    const r = frame.getBoundingClientRect();
+    const x = e.clientX - r.left, y = e.clientY - r.top;
+    const px = x / r.width - .5, py = y / r.height - .5;
+    tilt.style.transition = 'transform .12s ease-out';
+    tilt.style.transform = `rotateY(${px * 9}deg) rotateX(${-py * 9}deg)`;
+    const g = glow.getBoundingClientRect();
+    glow.style.setProperty('--mx', (e.clientX - g.left) + 'px');
+    glow.style.setProperty('--my', (e.clientY - g.top) + 'px');
+    readout.textContent = `X ${pad(x)} · Y ${pad(y)}`;
+  });
+  frame.addEventListener('mouseleave', () => {
+    tilt.style.transition = 'transform .7s var(--ease)';
+    tilt.style.transform = '';
+    readout.textContent = 'X 000 · Y 000';
+  });
+})();
 
 /* AI CHATBOT */
 const aiOrb=document.getElementById('aiOrb');
