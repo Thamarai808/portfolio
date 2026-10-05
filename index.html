@@ -6,7 +6,7 @@
 <title>Thamaraiselvan</title>
 
 <!-- External Fonts and Icons -->
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
 <!-- EmailJS Library -->
@@ -28,7 +28,8 @@
   --muted: #6e6660;
   --muted-light: #9a8f87;
   --border: rgba(242,237,232,0.07);
-  
+  --grid-line: rgba(242,237,232,0.09);
+
   /* BRAND COLORS (Remain same in both themes) */
   --rust: #c0432a;
   --rust-light: #d45035;
@@ -50,6 +51,7 @@ body.light-theme {
   --muted: #555555;
   --muted-light: #777777;
   --border: rgba(0, 0, 0, 0.1);
+  --grid-line: rgba(0,0,0,0.1);
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -189,14 +191,125 @@ body.light-theme header.scrolled {
 }
 
 .hero-img-wrap {
-  position: relative; 
-  overflow: hidden;
-  height: 100vh; 
+  position: relative;
+  min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  text-align: center;
+  padding: 120px 40px 80px 72px;
 }
+
+/* ───── HERO IMAGE FRAME ───── */
+.hero-frame {
+  position: relative;
+  width: min(100%, 440px);
+  aspect-ratio: 4 / 5;
+  opacity: 0;
+  animation: fadeUp .9s .3s forwards;
+}
+
+/* Grid pattern backdrop sitting behind / around the photo */
+.hero-frame-grid {
+  position: absolute;
+  inset: -36px;
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 28px 28px;
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 45%, transparent 78%);
+          mask-image: radial-gradient(ellipse at center, #000 45%, transparent 78%);
+  z-index: 0;
+}
+
+/* Offset outline frame (peeks out behind the photo) */
+.hero-frame-outline {
+  position: absolute;
+  inset: 0;
+  transform: translate(20px, 20px);
+  border: 1px solid var(--rust);
+  z-index: 1;
+  transition: transform .5s var(--ease);
+}
+.hero-frame:hover .hero-frame-outline { transform: translate(10px, 10px); }
+
+/* Photo container with cut corner */
+.hero-frame-photo {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  overflow: hidden;
+  clip-path: polygon(0 0, calc(100% - 36px) 0, 100% 36px, 100% 100%, 0 100%);
+}
+.hero-frame-photo img {
+  width: 100%; height: 100%;
+  object-fit: cover; object-position: top center;
+  filter: grayscale(100%) contrast(1.08);
+  transform: scale(1.04);
+  transition: filter .6s var(--ease), transform .8s var(--ease);
+  display: block;
+}
+.hero-frame:hover .hero-frame-photo img {
+  filter: grayscale(0%) contrast(1.02);
+  transform: scale(1);
+}
+/* subtle gradient at the bottom of the photo */
+.hero-frame-photo::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(8,8,8,.55) 0%, transparent 38%);
+  pointer-events: none;
+}
+
+/* Corner brackets */
+.frame-corner {
+  position: absolute; width: 28px; height: 28px;
+  border-color: var(--rust); border-style: solid; border-width: 0;
+  z-index: 4; pointer-events: none;
+}
+.frame-corner.tl { top: -10px; left: -10px; border-top-width: 2px; border-left-width: 2px; }
+.frame-corner.bl { bottom: -10px; left: -10px; border-bottom-width: 2px; border-left-width: 2px; }
+.frame-corner.br { bottom: -10px; right: -10px; border-bottom-width: 2px; border-right-width: 2px; }
+
+/* Label chip (top-right of the frame) */
+.frame-tag {
+  position: absolute; top: 18px; left: -14px;
+  z-index: 5;
+  padding: 7px 16px;
+  background: var(--rust); color: #fff;
+  font-size: 12px; letter-spacing: 3px; text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Floating badges */
+.frame-badge {
+  position: absolute; z-index: 5;
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 18px;
+  background: rgba(17,17,17,.85);
+  border: 1px solid var(--border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #f2ede8;
+}
+body.light-theme .frame-badge { background: rgba(255,255,255,.92); color: #111; }
+.frame-badge i { color: var(--rust); font-size: 18px; }
+.frame-badge strong {
+  display: block; font-family: 'Bebas Neue', sans-serif;
+  font-size: 22px; letter-spacing: 1.5px; line-height: 1; font-weight: 400;
+}
+.frame-badge span {
+  display: block; font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted-light);
+}
+.frame-badge.b1 { bottom: 34px; right: -30px; animation: floatBadge 5s ease-in-out infinite; }
+.frame-badge.b2 { top: 70px; right: -34px; animation: floatBadge 5s 1.2s ease-in-out infinite; }
+.frame-badge .live-dot {
+  width: 8px; height: 8px; border-radius: 50%; background: #4caf81;
+  animation: statusBlink 2s ease-in-out infinite;
+}
+@keyframes floatBadge { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
+
 .hero-side-text {
   position:absolute; left:24px; top:50%;
   transform:translateY(-50%) rotate(-90deg);
@@ -204,14 +317,6 @@ body.light-theme header.scrolled {
   color:var(--muted); z-index:5; white-space:nowrap;
   opacity:0; animation:fadeIn 1s 1.5s forwards;
 }
-.hero img {
-  width:80%; height:100%;
-  object-fit:cover; object-position:top center;
-  filter:grayscale(100%) contrast(1.08);
-  transform:scale(1.06);
-  transition:transform 10s ease;
-}
-.hero:hover .hero img { transform:scale(1.01); }
 
 .hero-content {
   position:relative; display:flex; flex-direction:column;
@@ -273,7 +378,7 @@ body.light-theme header.scrolled {
 .btn-outline:hover { border-color:var(--rust); color:var(--white); }
 
 .scroll-hint {
-  position:absolute; bottom:52px; right:56px;
+  position:absolute; bottom:40px; left:72px;
   display:flex; flex-direction:column; align-items:center; gap:10px;
   opacity:0; animation:fadeIn 1s 1.4s forwards;
   color:var(--muted); font-size: 12px; letter-spacing:3px;
@@ -663,6 +768,7 @@ footer {
   font-size: 16px; transition:all .3s;
 }
 .social-link:hover { border-color:var(--rust); color:var(--rust); transform:translateY(-3px); }
+.social-icon { width:18px; height:18px; }
 
 /* ━━━━━━━━━━━━━━━━━━ DIVIDER ━━━━━━━━━━━━━━━━━━ */
 .divider {
@@ -816,7 +922,9 @@ footer {
 /* ━━━━━━━━━━━━━━━━━━ RESPONSIVE ━━━━━━━━━━━━━━━━━━ */
 @media(max-width:1100px){
   .hero{grid-template-columns:1fr}
-  .hero-img-wrap{height:55vh}
+  .hero-img-wrap{min-height:auto; padding:130px 56px 40px}
+  .hero-content{padding:40px 32px 80px}
+  .scroll-hint{display:none}
   .about-grid,.contact-grid,.experience-layout{grid-template-columns:1fr;gap:56px}
   .projects-grid{grid-template-columns:1fr 1fr}
   .project-card.featured{grid-column:span 1;aspect-ratio:3/4}
@@ -835,12 +943,19 @@ footer {
   .nav-links{gap:16px}
   .hero-stats{gap:28px}
   .chat-panel{width:calc(100vw - 48px)}
-  
+
   /* Alignment fixes for mobile screens */
   .hero-content h1 { font-size: 42px; }
   .hero-content h1 em { font-size: 36px; }
-  .hero-content { padding: 100px 32px 40px 32px; }
+  .hero-content { padding: 30px 32px 40px 32px; }
   .section-title { font-size: 32px; }
+
+  /* Hero frame on small screens */
+  .hero-img-wrap { padding: 110px 44px 30px 32px; }
+  .hero-frame-outline { transform: translate(12px, 12px); }
+  .frame-badge.b1 { right: -22px; bottom: 20px; padding: 9px 12px; }
+  .frame-badge.b2 { right: -22px; top: 56px; padding: 9px 12px; }
+  .frame-badge strong { font-size: 18px; }
 }
 </style>
 </head>
@@ -901,13 +1016,51 @@ footer {
 </header>
 
 <section id="home" class="hero">
+
+  <!-- ═════ HERO IMAGE WITH GRID / FRAME ═════ -->
   <div class="hero-img-wrap">
-    <img src="profile(01).jpg" alt="Thamaraiselvan Baskaran">
+    <div class="hero-frame">
+      <!-- grid pattern behind -->
+      <div class="hero-frame-grid"></div>
+      <!-- offset outline -->
+      <div class="hero-frame-outline"></div>
+
+      <!-- photo -->
+      <div class="hero-frame-photo">
+        <img src="profile(01).jpg" alt="Thamaraiselvan Baskaran">
+      </div>
+
+      <!-- corner brackets -->
+      <span class="frame-corner tl"></span>
+      <span class="frame-corner bl"></span>
+      <span class="frame-corner br"></span>
+
+      <!-- label + floating badges -->
+      <div class="frame-tag">Portfolio 2026</div>
+
+      <div class="frame-badge b2">
+        <i class="fas fa-code"></i>
+        <div>
+          <strong>Full Stack</strong>
+          <span>Developer</span>
+        </div>
+      </div>
+
+      <div class="frame-badge b1">
+        <span class="live-dot"></span>
+        <div>
+          <strong>Open to work</strong>
+          <span>Namakkal, India</span>
+        </div>
+      </div>
+    </div>
+
     <div class="scroll-hint">
       <div class="scroll-line"></div>
       <span>Scroll</span>
     </div>
   </div>
+
   <div class="hero-content">
     <h1>Thamaraiselvan </h1>
     <p class="hero-eyebrow">Full Stack Web Developer &amp; UI/UX Designer</p>
@@ -1087,7 +1240,6 @@ footer {
                        IDentiX is a blockchain-powered decentralized platform that secures, verifies, and streamlines academic credential management.
                     </p>
 
-                    <!-- FIXED LINK BELOW -->
                     <a href="https://identix.vercel.app/" class="project-link" target="_blank" rel="noopener">
                         View Project →
                     </a>
@@ -1315,7 +1467,7 @@ let mx=0,my=0,rx=0,ry=0;
 document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY});
 document.addEventListener('mousedown',()=>cursor.classList.add('clicking'));
 document.addEventListener('mouseup',()=>cursor.classList.remove('clicking'));
-const hoverEls = 'a, button, .pillar, .project-card, .testimonial-card, .social-link, .suggestion, .tech-tag';
+const hoverEls = 'a, button, .pillar, .project-card, .testimonial-card, .social-link, .suggestion, .tech-tag, .hero-frame';
 document.querySelectorAll(hoverEls).forEach(el=>{
   el.addEventListener('mouseenter',()=>{cursor.classList.add('hovered');ring.classList.add('hovered')});
   el.addEventListener('mouseleave',()=>{cursor.classList.remove('hovered');ring.classList.remove('hovered')});
